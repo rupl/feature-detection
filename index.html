@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <title>Intro to Feature Detection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      box-sizing: border-box;
+      max-width: 39em;
+      padding: 1em;
+      margin: 0 auto;
+      font-size: 1.4em;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    main {
+      padding: 1em;
+    }
+
+    section {
+      margin-top: 4em;
+      min-height: 90vh;
+    }
+
+    .clear {
+      clear: both;
+    }
+
+    code {
+      display: inline-block;
+      background: #ccc;
+      color: #000;
+      font-family: 'Roboto Mono', monospace;
+      padding: 0 .2em;
+      margin: 0 -.2em;
+      border-radius: 5px;
+    }
+
+    code.block {
+      width: 100%;
+      padding: 1em;
+    }
+
+    button {
+      font-size: 1em;
+    }
+
+    .arrow-down {
+      display: inline-block;
+      transform: translateY(0);
+      animation: pulse-down 10s ease-in-out infinite;
+    }
+    @keyframes pulse-down {
+      0% {
+        transform: translateY(0);
+      }
+      5% {
+        transform: translateY(1em);
+      }
+      10% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(0);
+      }
+      55% {
+        transform: translateY(1em);
+      }
+      60% {
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+<main>
+
+  <section aria-labelledby="intro">
+    <h1 id="intro">Intro to Feature Detection</h1>
+    <p>This is an <strong>interactive demo</strong> about feature detection.</p>
+    <p><strong>View the source</strong> and see the inline CSS/JS that powers each section. <strong>Inspect any element</strong> to see how it works</p>
+    <p>Scroll down to continue <span class="arrow-down">⬇</span></p>
+  </section>
+
+  <section aria-labelledby="ua-detection">
+    <h2 id="ua-detection">UA Sniffing</h2>
+    <p>In the good ol' days, we looked at a complicated identifier called a <strong>User-Agent String</strong> to guess what browser was hitting our sites. This typically happened on the server before returning HTML to the visitor.</p>
+    <p>Your current user-agent string:</p>
+    <p><code class="block my-user-agent">Enable JS to see your UA string</code></p>
+    <script>
+      document.querySelector('.my-user-agent').innerHTML = navigator.userAgent;
+    </script>
+    <p>How many of these words actually describe your browser? The user-agent string is more a history lesson about your browser than a straightforward identifier.</p>
+    <p>Many of the words you see are there simply because at one point in time that word identified the most popular browser of the day.</p>
+  </section>
+
+  <section aria-labelledby="feature-detection">
+    <h2 id="feature-detection">Detect features, don't assume!</h2>
+    <p>As browsers grew in complexity, the old way of guessing became unwieldy. It was often wrong, and when one browser innovated, the second and third-place implementors had to imitate aspects of other browsers to receive the same features.</p>
+    <p>Valid Firefox code:</p>
+    <p><code class="block" style="-webkit-border-radius: 50px">-webkit-border-radius: 50px;</code></p>
+    <p>Soon we wanted a way to make decisions on each client instead of making assumptions on the server.</p>
+    <p><strong>Responsive Web Design</strong> pushed feature detection into the mainstream. People wanted to send one codebase to the browser and have it render well in different form factors.</p>
+  </section>
+
+  <section aria-labelledby="pe">
+    <h2 id="pe">Progressive Enhancement</h2>
+    <p>I'm a regular paragraph with some plaintext, the most reliable form of content.</p>
+    <p><button class="toggle-image">toggle image visibility</button></p>
+    <img class="content-img" src="img/doesnt-exist.jpg" alt="I'm supposed to be a beautiful image of the ocean, but the image couldn't be displayed.">
+    <p>Alt text is the oldest form of <strong>graceful degredation</strong>. If you can't show your preferred media show something simpler as a fallback, like a text description.</p>
+    <p><strong>Progressive Enhancement</strong> flips that way of thinking on its head: show something simple; when you test for something more advanced then show that.</p>
+    <p><strong>Mobile-first</strong> is the best-known progressive enhancement method. We assume the most basic capabilities by default, then query for other media properties like screen dimensions, touch events, etc.</p>
+
+    <style type="text/css">
+      .content-img {
+        max-width: 100%;
+        display: inline-block;
+        padding: 1em;
+        margin: 0 -1em;
+        background: #ddd;
+        font-style: italic;
+        position: relative;
+      }
+      .content-img::after {
+        content: "[url: " attr(src) "]";
+        display: block;
+        font-size: .8em;
+        margin-top: 1em;
+      }
+    </style>
+    <script>
+      document.querySelector('.toggle-image').addEventListener('click', function toggleImage() {
+        var imgSrc = document.querySelector('.content-img').src;
+        imgSrc = (imgSrc.indexOf('img/doesnt-exist.jpg') !== -1) ? 'img/does-exist.jpg' : 'img/doesnt-exist.jpg';
+        document.querySelector('.content-img').src = imgSrc;
+      });
+    </script>
+  </section>
+
+  <section aria-labelledby="media-features">
+    <h2 id="media-features">Detecting <code>@media</code> features</h2>
+    <p class="media-media">Current media: </p>
+    <p class="media-size">Viewport size: </p>
+    <p class="media-orientation">Orientation: </p>
+    <p>These individual media features can be combined into larger <strong>media queries</strong>:</p>
+    <pre><code class="block">@media only screen and (min-width: 802px) {
+  /* CSS for screens at least 802px wide */
+}</code></pre>
+
+    <style type="text/css">
+      /**
+       * First define the unqualified answer without using feature detection.
+       */
+      .media-media::after,
+      .media-size::after,
+      .media-orientation::after {
+        content: 'undetermined';
+        font-weight: 700;
+      }
+
+      /**
+       * Using @media queries, display answers.
+       */
+      @media screen {
+        .media-media::after {
+          content: 'screen';
+        }
+      }
+      @media print {
+        .media-media::after {
+          content: 'print';
+        }
+      }
+
+
+      /**
+       * Screen size is subjective, but you can detect viewport width and label it.
+       */
+      @media only screen and (min-width: 0) {
+        .media-size::after {
+          content: 'small';
+        }
+      }
+      @media only screen and (min-width: 362px) {
+        .media-size::after {
+          content: 'medium';
+        }
+      }
+      @media only screen and (min-width: 789px) {
+        .media-size::after {
+          content: 'large';
+        }
+      }
+      @media only screen and (min-width: 1809px) {
+        .media-size::after {
+          content: 'yuuuuge!!';
+        }
+      }
+
+      @media only screen and (orientation: portrait) {
+        .media-orientation::after {
+          content: 'portrait';
+        }
+      }
+      @media only screen and (orientation: landscape) {
+        .media-orientation::after {
+          content: 'landscape';
+        }
+      }
+    </style>
+  </section>
+
+  <section aria-labelledby="css-supports">
+    <h2 id="css-supports">Detect CSS with <code>@supports</code></h2>
+    <p>CSS has added its own feature detection method using <code>@supports</code> blocks.</p>
+    <p>They function just like <code>@media</code> but are for individual CSS features that your browser may or may not support.</p>
+    <p class="not-invented-yet">No browser support for: </p>
+
+    <div class="css-grid">
+      <div class="grid-header">Header</div>
+      <div class="grid-content"><h3>Main content column</h3><p>Just a sprinkle of content for some realism here.</p></div>
+      <div class="grid-sidebar">Sidebar</div>
+      <div class="grid-footer">Footer</div>
+    </div>
+
+    <p>View the source to see how the sample layout changes from single-column to a float-based grid at a certain screen width, and opts for CSS Grid when the browser supports it.</p>
+
+    <style type="text/css">
+      .css-grid > * {
+        background-color: #444;
+        color: #fff;
+        border-radius: 5px;
+        padding: 20px;
+        font-size: 100%;
+        margin-bottom: 10px;
+      }
+
+      /**
+       * Since this example is a multi-column layout, qualify viewport width
+       * using a media query. Both fallback and CSS Grid are nested within this
+       * media query, meaning smaller viewports or very old browsers get a basic
+       * single-col layout.
+       */
+      @media (min-width: 700px) {
+        /**
+         * First, define our old-school grid here.
+         */
+        .grid-header,
+        .grid-footer {
+          clear: both;
+        }
+        .grid-content {
+          float: right;
+          width: 70%;
+        }
+        .grid-sidebar {
+          float: left;
+          width: 25%;
+        }
+
+        /**
+         * Using @supports, we define our CSS Grid. If the browser doesn't yet
+         * support CSS Grid, none of the styles in here will apply.
+         */
+        @supports (display: grid) {
+          .css-grid {
+            display: grid;
+            grid-gap: 10px;
+            grid-template-columns: [left] 1fr [right] 3fr;
+          }
+
+          .css-grid > * {
+            margin: 0;
+            width: auto;
+          }
+
+          .grid-header,
+          .grid-footer {
+            grid-column: 1 / -1;
+          }
+
+          .grid-sidebar {
+            grid-area: left;
+          }
+
+          .grid-content {
+            grid-area: right;
+          }
+          .grid-content h3 {
+            margin-top: 0;
+          }
+        }
+      }
+
+      /**
+       * @supports can handle negative feature detection too.
+       */
+      .not-invented-yet::after {
+        content: 'undetermined';
+      }
+
+      @supports not (display: future-technology) {
+        .not-invented-yet::after {
+          content: 'future-technology';
+          font-weight: 700;
+        }
+      }
+    </style>
+  </section>
+
+  <section aria-labelledby="detect-js">
+    <h2 id="detect-js">Detect everything with JS</h2>
+    <p>JavaScript is much easier to test.</p>
+    <ul class="js-detects">
+      <li class="has-appcodename">appCodeName is <span class="result">undetected</span>.</li>
+      <li class="has-appname">appName is <span class="result">undetected</span>.</li>
+      <li class="has-cookies">Cookies are <span class="result">undetected</span>.</li>
+      <li class="has-geolocation">Geolocation is <span class="result">undetected</span>.</li>
+      <li class="has-serviceworker">Service Worker is <span class="result">undetected</span>.</li>
+      <li class="has-network">Network is <span class="result">undetected</span>.</li>
+    </ul>
+    <p>Notice that the <code>appCodeName</code> and <code>appName</code> are probably NOT describing the browser you're using. That's why it's important to ignore the name of a browser and instead focus on detecting it's capabilities.</p>
+    <p>Most of these features were detected on page load and the answer won't change until you reload. But the <strong>Network</strong> feature has event listeners attached. Turn your wi-fi off and the status will change.</p>
+
+    <style type="text/css">
+      .js-detects .result {
+        font-size: 1.2em;
+        font-weight: 700;
+      }
+    </style>
+    <script>
+      //
+      // Test any number of features when your page loads.
+      //
+      if ('appCodeName' in navigator) {
+        document.querySelector('.has-appcodename .result').innerHTML = navigator.appCodeName;
+      }
+      if ('appName' in navigator) {
+        document.querySelector('.has-appname .result').innerHTML = navigator.appName;
+      }
+      if ('cookieEnabled' in navigator) {
+        document.querySelector('.has-cookies .result').innerHTML = 'supported';
+      }
+      if ('geolocation' in navigator) {
+        document.querySelector('.has-geolocation .result').innerHTML = 'supported';
+      }
+      if ('serviceWorker' in navigator) {
+        document.querySelector('.has-serviceworker .result').innerHTML = 'supported';
+      }
+      if (!!navigator.onLine) {
+        online();
+      } else {
+        offline();
+      }
+
+      //
+      // Event listeners can change your code's behavior in real-time.
+      //
+      window.addEventListener('online', online);
+      window.addEventListener('offline', offline);
+
+      //
+      // Define callbacks, in this case just simple notifiers of network status.
+      //
+      function online() {
+        document.querySelector('.has-network .result').innerHTML = 'online';
+        console.log('🔌 Network changed to online');
+      }
+      function offline() {
+        document.querySelector('.has-network .result').innerHTML = 'offline';
+        console.log('😢 Network changed to offline');
+      }
+    </script>
+  </section>
+
+  <section aria-labelledby="modernizr">
+    <h2 id="modernizr">Modernizr</h2>
+    <p>Nowadays, you almost never need to write your own feature detection if you don't want to.</p>
+    <ul class="modernizr-detects">
+      <li class="cssgrid">cssgrid</li>
+      <li class="cssgridlegacy">cssgridlegacy</li>
+      <li class="serviceworker">serviceworker</li>
+      <li class="geolocation">geolocation</li>
+      <li class="flexbox">flexbox</li>
+      <li class="flexboxlegacy">flexboxlegacy</li>
+    </ul>
+    <br class="clear">
+    <p><button class="inject-modernizr">inject Modernizr into page</button></p>
+    <p>All tests are grey until Modernizr executes and adds the results to the <code>&lt;html&gt;</code> element. Afterwards, any test that passes is <span class="green">green</span>, and any that fail are <span class="red">red</span>.</p>
+    <p>Look at <a href="modernizr.js">modernizr.js</a> and visit the URL in the top comment to edit the file. Add the <code>flexbox</code> feature test to your Modernizr build.</p>
+    <p>Once Modernizr executes, open the JavaScript console, type <code>Modernizr</code>, and hit enter. The object contains all test results as Booleans. You can use them in your code like this:</p>
+    <pre><code class="block">if (Modernizr.cssgrid) {
+  // Code depending on CSS Grid
+} else {
+  // Fallback code
+}</code></pre>
+
+    <style type="text/css">
+      .red,
+      .green {
+        background: green;
+        color: white;
+        padding: 0 .2em;
+        margin: 0 -.1em;
+      }
+      .red {
+        background: red;
+      }
+      .modernizr-detects {
+        margin: 0;
+        padding: 0;
+      }
+      .modernizr-detects li {
+        display: inline-block;
+        float: left;
+        background: #aaa;
+        color: white;
+        width: auto;
+        margin: .5em;
+        padding: .2em;
+      }
+      .cssgrid .cssgrid,
+      .cssgridlegacy .cssgridlgacy,
+      .serviceworker .serviceworker,
+      .geolocation .geolocation,
+      .flexbox .flexbox,
+      .flexboxlegacy .flexboxlegacy {
+        background: green;
+      }
+
+      .no-cssgrid .cssgrid,
+      .no-cssgridlegacy .cssgridlegacy,
+      .no-serviceworker .serviceworker,
+      .no-geolocation .geolocation,
+      .no-flexbox .flexbox,
+      .no-flexboxlegacy .flexboxlegacy {
+        background: red;
+      }
+    </style>
+    <script>
+      document.querySelector('.inject-modernizr').addEventListener('click', function injectModernizr() {
+        var script = document.createElement('script');
+        script.src = 'modernizr.js';
+        document.querySelector('head').appendChild(script);
+        document.querySelector('.inject-modernizr').disabled = true;
+      });
+    </script>
+  </section>
+
+  <section aria-labelledby="colophon">
+    <h2 id="colophon">About this page</h2>
+    <p>Created by <a href="https://chrisruppel.com/work/">Chris Ruppel</a> for <a href="https://www.meetup.com/Frontend-Meetup-Freiburg/events/246833061/">Frontend Meetup Freiburg</a>.</p>
+    <p>This page is <a href="https://github.com/rupl/feature-detection">open source</a>. Hack on it and make it your own!</p>
+    <p>All content is licenced <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC-BY-SA 4.0</a>.</p>
+    <p>All code is licenced <a href="https://github.com/rupl/feature-detection/blob/gh-pages/LICENSE">MIT</a>, <a href="https://github.com/Modernizr/Modernizr/blob/master/LICENSE">including Modernizr</a>.</p>
+  </section>
+</main>
+</body>
+</html>
